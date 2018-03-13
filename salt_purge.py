@@ -6,7 +6,7 @@ from time import sleep
 from sys import argv
 
 # Limit to 10 threads so we aren't purging too many concurrent keys
-threadLimiter = threading.BoundedSemaphore(argv[1])
+threadLimiter = threading.BoundedSemaphore(int(argv[1]))
 # List of hosts that failed to reauthenticate!
 failed = []
 
@@ -25,7 +25,7 @@ def run(line):
     logging.info("Attempting to test.ping {}".format(line))
     salt_ping=Popen("/usr/bin/salt {} test.ping".format(line), shell=True, stdout=PIPE, stderr=PIPE)
     output=salt_ping.communicate()
-    print(output)   
+
     if 'No response' in output[0] or 'No return' in output[1]:
       logging.warning("{} is currently inaccessible...".format(line))
 
@@ -70,7 +70,7 @@ except ExitCommand:
 finally:
   with open('failed.txt', 'w') as failed_hosts:
     for host in failed:
-      failed_hosts.write("{}\n".forma(host))
-  logging.warning("The following hosts failed to reauthenticate! {}".format(failed))
+      failed_hosts.write("- {}\n".format(host))
+  logging.warning("The following hosts failed to reauthenticate! {}".format(failed,))
 
 
