@@ -7,7 +7,7 @@ from sys import argv
 
 
 # Set logging to info
-logging.BasicConfig(level='INFO')
+logging.basicConfig(level='INFO')
 # Limit to 10 threads so we aren't purging too many concurrent keys
 threadLimiter = threading.BoundedSemaphore(int(argv[1]))
 # List of hosts that failed to reauthenticate!
