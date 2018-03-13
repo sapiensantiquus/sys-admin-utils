@@ -55,7 +55,7 @@ def run(line):
 # Copy inaccessible hosts into this
 down_hosts = []
 try:
-  with open('down') as down:
+  with open(argv[2]) as down:
     down_hosts_raw = down.readlines()
     down_hosts = [line[2:] for line  in down_hosts_raw]
     for l in down_hosts:
