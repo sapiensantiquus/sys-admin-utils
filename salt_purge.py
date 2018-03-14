@@ -12,7 +12,8 @@ logging.basicConfig(level='INFO')
 threadLimiter = threading.BoundedSemaphore(int(argv[1]))
 # List of hosts that failed to reauthenticate!
 failed = []
-
+success = []
+processed = []
 
 # If we ctrl + c, let's make sure to propagate to master process with exception
 class ExitCommand(Exception):
@@ -35,14 +36,14 @@ def run(line):
     else:
       logging.info("{} is accessible. Skipping...".format(line))
       return
-  
+
     logging.info("Purging key: {}".format(line))
     salt_key_purge=Popen("/usr/bin/salt-key -d {}".format(line), shell=True, stdout=PIPE, )
 
     # Give time to reauthenticate
     sleep(60)
 
-    # Technically we may have not given these hosts enough time. Make sure to 
+    # Technically we may have not given these hosts enough time. Make sure to
     # drop failed auth hosts into a file for post-processing.
     salt_ping_after=Popen("/usr/bin/salt {} test.ping".format(line), shell=True, stdout=PIPE, stderr=PIPE)
     output_after=salt_ping_after.communicate()
@@ -50,9 +51,11 @@ def run(line):
       logging.error("{} is still inaccessible...".format(line))
       failed.append(line)
     else:
-      logging.info("{} was succesfully re-added!".format(line)) 
-    
+      logging.info("{} was succesfully re-added!".format(line))
+      success.append(line)
+
   finally:
+    total.append(line)
     threadLimiter.release()
 
 # Copy inaccessible hosts into this
@@ -71,9 +74,13 @@ try:
 except ExitCommand:
   pass
 finally:
-  with open('failed.txt', 'w') as failed_hosts:
+  with open('failed.txt', 'w') as failed_hosts_file:
     for host in failed:
-      failed_hosts.write("- {}\n".format(host))
+      failed_hosts_file.write("- {}\n".format(host))
+  with open('success.txt','w') as successful_hosts_file:
+    for host in success:
+      successful_hosts_file.write("- {}\n".format(host))
+  with open('processed_hosts.txt','w') as processed_hosts_file:
+    for host in processed:
+      processed_hosts_file.write("- {}\n").format(host))
   logging.warning("The following hosts failed to reauthenticate! {}".format(failed,))
-
-
