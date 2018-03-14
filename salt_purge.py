@@ -82,5 +82,5 @@ finally:
       successful_hosts_file.write("- {}\n".format(host))
   with open('processed_hosts.txt','w') as processed_hosts_file:
     for host in processed:
-      processed_hosts_file.write("- {}\n").format(host))
+      processed_hosts_file.write("- {}\n".format(host))
   logging.warning("The following hosts failed to reauthenticate! {}".format(failed,))
